@@ -3,4 +3,6 @@
     <string name="dummy">This is come dummy text. It takes up some space. alkjdfafoi</string>
     <string name="temp">21°</string>
     <string name="small_temp"><![CDATA[8&temp]]></string>
+    <string name="action_settings">Settings</string>
+    <string name="action_refresh">Refresh</string>
 </resources>

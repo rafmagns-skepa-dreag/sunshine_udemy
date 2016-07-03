@@ -1,10 +1,14 @@
 package com.example.richard.sunshine;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -14,19 +18,24 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-
 /**
- * Created by richard on 7/3/2016.
+ * Definition of fragment that gets and displays the forecast
  */
 public class ForecastFragment extends Fragment {
 
     public ForecastFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -55,10 +64,26 @@ public class ForecastFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
         listView.setAdapter(adapter);
 
-        new FetchWeatherTask().execute("https://api.openweathermap.org/data/2.5/forecast/daily?q=60618&cnt=16&APPID=604579dd75ea230cf9cf861961d6bbf8");
+        new FetchWeatherTask().execute("60618");
 
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.forecastfragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            new FetchWeatherTask().execute("60618");
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String> {
@@ -66,18 +91,31 @@ public class ForecastFragment extends Fragment {
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
         @Override
-        protected String doInBackground(String... urls) {
-            HttpsURLConnection urlConnection = null;
+        protected String doInBackground(String... params) {
+            HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
             String forecastJsonStr = null;
 
             try {
                 // Construct query for OpenWeather API
-                URL url = new URL(urls[0]);
+                Uri.Builder builder = new Uri.Builder();
+                builder.scheme("http")
+                        .authority("api.openweathermap.org")
+                        .appendPath("data")
+                        .appendPath("2.5")
+                        .appendPath("forecast")
+                        .appendPath("daily")
+                        .appendQueryParameter("q", params[0])
+                        .appendQueryParameter("cnt", "7")
+                        .appendQueryParameter("units", "metric")
+                        .appendQueryParameter("APPID", "604579dd75ea230cf9cf861961d6bbf8")
+                        .build();
+
+                URL url = new URL(builder.toString());
 
                 // Create request and connection to the api
-                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
 

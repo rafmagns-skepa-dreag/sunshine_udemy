@@ -14,14 +14,21 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -160,5 +167,57 @@ public class ForecastFragment extends Fragment {
 
             return forecastJsonStr;
         }
+
+        private String getReadableDateString(long time) {
+            // Convert UNIX timestamp to something useful
+//            SimpleDateFormat shortenedDate = new SimpleDateFormat(time, Locale.US);
+//            return shortenedDate.format(time);
+             return "";
+        }
+
+        private String formatHiLow(double high, double low) {
+            // For presentation we assume user doesn't care about tenths (though they do in C)
+            long roundedHi = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            return roundedHi + "/" + roundedLow;
+        }
+
+        /**
+         * Take the string provided by our API call and parse out the useful data
+         */
+        private String getWeatherFromJson(String forecastJsonStr, int numDays)
+            throws JSONException {
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String OWM_LIST = "list";
+            final String OWM_WEATHER = "weather";
+            final String OWM_TEMPERATURE = "temp";
+            final String OWM_MAX = "max";
+            final String OWM_MIN = "min";
+            final String OWM_DESCRIPTION = "main";
+
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+            JSONArray weatherArray = forecastJson.optJSONArray(OWM_LIST);
+
+            // OWM returns daily forecasts based upon the local time of the city that is being
+            // asked for, which means that we need to know the GMT offset to translate this data
+            // properly.
+
+            // Since this data is also sent in-order and the first day is always the
+            // current day, we're going to take advantage of that to get a nice
+            // normalized UTC date for all of our weather.
+
+            // the code from Udemy is deprecated. Some Javadoc sniffing returned this
+            Time dayTime = new Time(System.currentTimeMillis());
+
+            GregorianCalendar calendar = new GregorianCalendar();
+            Date date = calendar.getTime();
+            date.get();
+
+
+            return null;
+        }
+
     }
 }
